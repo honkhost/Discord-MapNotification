@@ -12,4 +12,4 @@ project:
   targets:
     - discord_api
     - discord_MapNotification
-  output: /addons/sourcemod/plugins
+  output: /discord_MapNotification/addons/sourcemod/plugins
