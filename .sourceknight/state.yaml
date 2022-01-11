@@ -1,0 +1,11 @@
+build:
+  sourcemod:
+    driver: tar
+    name: sourcemod
+    version: 1.10.0-git6528
+dependencies:
+  sourcemod:
+    driver: tar
+    location: .sourceknight/cache/f01cb207ba2a417e9894f8de53c7b18a.tar
+    name: sourcemod
+    version: 1.10.0-git6528
