@@ -21,7 +21,7 @@
     {
         "en"   "Join server:"
         "de"   "Server betreten:"
-	"pt"   "Connect:"
+	    "pt"   "Connect:"
         "tr"   "Sunucuya Katıl"
     }
 }
