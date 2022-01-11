@@ -100,10 +100,10 @@ public Action Timer_SendMessage(Handle timer)
 
     char sConnect[256];
     char sCustomUrl[256];
-    g_cAvatar.GetString(sCustomUrl, sizeof(sCustomUrl));
+    g_cJoinUrl.GetString(sCustomUrl, sizeof(sCustomUrl));
     if (strlen(sCustomUrl) < 2)
     {
-        Format(sConnect, sizeof(sConnect), "%s", g_cJoinUrl);
+        Format(sConnect, sizeof(sConnect), "%s", sCustomUrl);
     } else 
     {
         Format(sConnect, sizeof(sConnect), "steam://connect/%s:%d", sIP, iPort);
