@@ -19,6 +19,7 @@ ConVar g_cLangCode = null;
 ConVar g_cGame = null;
 ConVar g_cLogo = null;
 ConVar g_cJoinUrl = null;
+ConVar g_cMinPlayers = null;
 
 public Plugin myinfo =
 {
@@ -44,6 +45,7 @@ public void OnPluginStart()
     g_cGame = AutoExecConfig_CreateConVar("discord_map_notification_game", "csgo", "Which game directory for images? (Default: csgo)");
     g_cLogo = AutoExecConfig_CreateConVar("discord_custom_logo_url", "", "If you want to set a custom logo for the embedded discord message, fill this with your logo url out.\nIf you use custom logo, map picture (from gametracker) will be ignored.");
     g_cJoinUrl = AutoExecConfig_CreateConVar("discord_custom_join_url", "", "If you want to set a custom join url, fill this in with your steam://hostname:port/password link");
+    g_cMinPlayers = AutoExecConfig_CreateConVar("discord_minimum_players", "11", "Minimum players to enable the webhook");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
@@ -78,7 +80,17 @@ public Action Timer_SendMessage(Handle timer)
 
     LogMessage("Timer_SendMessage1");
 
-    if (StrContains(sLastMap, sMap, false) != -1 && iPlayers < 2)
+    int iMinPlayers;
+    iMinPlayers = g_cMinPlayers.IntValue;
+
+    LogMessage("-----------------------------------------------");
+    LogMessage("iMinPlayers:");
+    LogMessage("%d", iMinPlayers);
+    LogMessage("iPlayers:");
+    LogMessage("%d", iPlayers);
+
+    //if (iPlayers < iMinPlayers)
+    if (StrContains(sLastMap, sMap, false) != -1 || iPlayers < iMinPlayers)
     {
         return;
     }
