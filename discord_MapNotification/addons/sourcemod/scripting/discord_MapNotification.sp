@@ -8,7 +8,7 @@
 
 #pragma newdecls required
 
-#define LoopValidClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++) if(IsClientValid(%1))
+#define LoopValidClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++) if(IsClientValid(%1) && !IsFakeClient(%1))
 #define FILE_LASTMAP "addons/sourcemod/configs/DMN_LastMap.ini"
 
 ConVar g_cWebhook = null;
@@ -20,6 +20,7 @@ ConVar g_cGame = null;
 ConVar g_cLogo = null;
 ConVar g_cJoinUrl = null;
 ConVar g_cMinPlayers = null;
+ConVar g_cDiscordDebug = null;
 
 public Plugin myinfo =
 {
@@ -44,8 +45,9 @@ public void OnPluginStart()
     g_cLangCode = AutoExecConfig_CreateConVar("discord_map_notification_language_code", "en", "Which language (as 2 or 3 digit code) for discord messages?\nHere's a list of some/all languages codes:\nhttps://en.wikipedia.org/wiki/List_of_ISO_639-1_codes");
     g_cGame = AutoExecConfig_CreateConVar("discord_map_notification_game", "csgo", "Which game directory for images? (Default: csgo)");
     g_cLogo = AutoExecConfig_CreateConVar("discord_custom_logo_url", "", "If you want to set a custom logo for the embedded discord message, fill this with your logo url out.\nIf you use custom logo, map picture (from gametracker) will be ignored.");
-    g_cJoinUrl = AutoExecConfig_CreateConVar("discord_custom_join_url", "", "If you want to set a custom join url, fill this in with your steam://hostname:port/password link");
-    g_cMinPlayers = AutoExecConfig_CreateConVar("discord_minimum_players", "11", "Minimum players to enable the webhook");
+    g_cJoinUrl = AutoExecConfig_CreateConVar("discord_custom_join_url", "", "If you want to set a custom join url,\nfill this in with your steam://hostname:port/password link");
+    g_cMinPlayers = AutoExecConfig_CreateConVar("discord_minimum_players", "2", "Minimum players to enable the webhook");
+    g_cDiscordDebug = AutoExecConfig_CreateConVar("discord_debug", "0", "Debug mode - set to 1 to enable, anything else to disable");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
@@ -78,24 +80,31 @@ public Action Timer_SendMessage(Handle timer)
         iPlayers++;
     }
 
-    LogMessage("Timer_SendMessage1");
+    if (g_cDiscordDebug.IntValue == 1) {
+        LogMessage("Timer_SendMessage1");
+    }
 
     int iMinPlayers;
     iMinPlayers = g_cMinPlayers.IntValue;
 
-    LogMessage("-----------------------------------------------");
-    LogMessage("iMinPlayers:");
-    LogMessage("%d", iMinPlayers);
-    LogMessage("iPlayers:");
-    LogMessage("%d", iPlayers);
+    if (g_cDiscordDebug.IntValue == 1) {
+        LogMessage("iMinPlayers:");
+        LogMessage("%d", iMinPlayers);
+        LogMessage("iPlayers:");
+        LogMessage("%d", iPlayers);
+    }
 
-    //if (iPlayers < iMinPlayers)
     if (StrContains(sLastMap, sMap, false) != -1 || iPlayers < iMinPlayers)
     {
+        if (g_cDiscordDebug.IntValue == 1) {
+            LogMessage("sLastMap contains sMap || iPlayers !< iMinPlayers, not sending message");
+        }
         return;
     }
 
-    LogMessage("Timer_SendMessage2");
+    if (g_cDiscordDebug.IntValue == 1) {
+        LogMessage("Timer_SendMessage2");
+    }
 
     char sPlayers[24];
     Format(sPlayers, sizeof(sPlayers), "%d/%d", iPlayers, iMax);
@@ -110,19 +119,22 @@ public Action Timer_SendMessage(Handle timer)
     cvar = FindConVar("hostport");
     int iPort = cvar.IntValue;
 
-    char sConnect[256];
-    char sJoinUrl[256];
+    char sConnect[256]; // ip:port
+    char sJoinUrl[256]; // Custom join url
     g_cJoinUrl.GetString(sJoinUrl, sizeof(sJoinUrl));
-    if (strlen(sJoinUrl) > 2)
+    if (strlen(sJoinUrl) > 2) // Did they specify a join url?
     {
         Format(sConnect, sizeof(sConnect), sJoinUrl);
     } 
-    else 
+    else // Otherwise use ip:port
     {
         Format(sConnect, sizeof(sConnect), "steam://connect/%s:%d", sIP, iPort);
     }
-    LogMessage("sConnect:");
-    LogMessage(sConnect);
+
+    if (g_cDiscordDebug.IntValue == 1) {
+        LogMessage("sConnect:");
+        LogMessage(sConnect);
+    }
 
     char sGame[18];
     g_cGame.GetString(sGame, sizeof(sGame));
@@ -156,7 +168,9 @@ public Action Timer_SendMessage(Handle timer)
         return;
     }
 
-    LogMessage("Timer_SendMessage3");
+    if (g_cDiscordDebug.IntValue == 1) {
+        LogMessage("Timer_SendMessage3");
+    }
 
     DiscordWebHook hook = new DiscordWebHook(sHook);
     hook.SlackMode = true;
@@ -191,7 +205,9 @@ public Action Timer_SendMessage(Handle timer)
     hook.Send();
     delete hook;
 
-    LogMessage("Timer_SendMessage4");
+    if (g_cDiscordDebug.IntValue == 1) {
+        LogMessage("Timer_SendMessage4");
+    }
 
     UpdateLastMap(sMap);
 }
